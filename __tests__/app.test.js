@@ -1,8 +1,9 @@
 const request = require("supertest");
-const seed = require("../db/seeds/seed.js")
-const db = require("../db/connection.js")
-const data = require("../db/data/test-data/index.js")
+const seed = require("../db/seeds/seed.js");
+const db = require("../db/connection.js");
+const data = require("../db/data/test-data/index.js");
 const app = require("../app.js");
+const endpoints = require("../endpoints.json");
 
 beforeEach(() => {
     return seed(data);
@@ -36,4 +37,15 @@ describe('GET /api/topics', () => {
             expect(body.msg).toBe('Not Found');
         })
     })
+});
+
+describe('GET /api', () => {
+    it('Should return 200 with the endpoints.json', () => {
+        return request(app)
+        .get('/api')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body).toEqual(endpoints)
+        })
+    });
 });
