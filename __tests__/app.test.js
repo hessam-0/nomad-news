@@ -14,7 +14,7 @@ afterAll(() => {
 });
 
 describe('GET /api/topics', () => {
-    it('Should respond with status 200 an array of topics with slug and description', () => {
+    it('GET: 200 - Should respond with an array of topics with slug and description', () => {
         return request(app)
         .get('/api/topics')
         .expect(200)
@@ -29,7 +29,7 @@ describe('GET /api/topics', () => {
             })
         })
     });
-    it('Should respond with a status 404 and error message for invalid endpoints', () => {
+    it('GET: 404 - Should respond with error message for invalid endpoints', () => {
         return request(app)
         .get('/api/xxx')
         .expect(404)
@@ -40,12 +40,25 @@ describe('GET /api/topics', () => {
 });
 
 describe('GET /api', () => {
-    it('Should return 200 with the endpoints.json', () => {
+    it('GET: 200 - Should respond with endpoints', () => {
         return request(app)
         .get('/api')
         .expect(200)
         .then(({ body }) => {
             expect(body).toEqual(endpoints)
+        })
+    });
+});
+describe('GET /api/articles/:article_id', () => {
+    it('GET: 200 - Should respond with a single article object when given a valid and existent article_id', () => {
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then(({ body }) => {
+            console.log(body, "<<???")
+            expect(body.article.article_id).toBe(1)
+            expect(typeof body.article.title).toBe("string")
+            expect(body.article).toHaveProperty("created_at")
         })
     });
 });
