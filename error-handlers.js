@@ -1,8 +1,6 @@
 exports.psqlErrorHandler = (err, req, res, next) => {
     if (err.code === '22P02') {
         res.status(400).send({ msg: 'Bad Request' })
-    // } else if( err.code === '22003') {
-    //     res.status(404).send({ msg : 'Not Found'})
     } else {
         next(err)
     }
@@ -10,7 +8,6 @@ exports.psqlErrorHandler = (err, req, res, next) => {
 
 
 exports.customErrorHandler = (err, req, res, next) => {
-    console.log(err, "<< this should be the error")
     if(err.status && err.msg){
         res.status(err.status).send({ msg: err.msg })
     } else {
