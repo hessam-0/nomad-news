@@ -7,6 +7,7 @@ exports.getArticleById = (req, res, next) => {
         res.status(200).send({ article })
     })
     .catch((err) => {
+        console.log(err, "<< error in the controller")
         next(err)
     })
 }
