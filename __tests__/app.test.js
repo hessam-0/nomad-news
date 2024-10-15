@@ -39,7 +39,6 @@ describe('GET /api/topics', () => {
         })
     })
 });
-
 describe('GET /api', () => {
     it('GET: 200 - Should respond with endpoints', () => {
         return request(app)
@@ -60,7 +59,7 @@ describe('GET /api/articles/:article_id', () => {
             expect(typeof body.article.title).toBe("string")
             expect(body.article).toHaveProperty("created_at")
         })
-    });
+    })
     it('GET: 400 - Should respond with an error message when given an invalid article_id', () => {
         return request(app)
         .get('/api/articles/xyz')
@@ -84,7 +83,6 @@ describe('GET /api/articles', () => {
         .get('/api/articles')
         .expect(200)
         .then(({ body }) => {
-            console.log(body)
             expect(Array.isArray(body.articles)).toBe(true);
             expect(body.articles.length).toBeGreaterThan(0);
             body.articles.forEach((article) => {
@@ -116,6 +114,62 @@ describe('GET /api/articles', () => {
             expect(body.articles).toBeSortedBy('created_at', {
                 descending: true
             })
+        })
+    })
+});
+describe('GET /api/articles/:article_id/comments', () => {
+    it('GET: 200 - Should respond with an array of comments for the given article_id', () => {
+        return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+            expect(Array.isArray(body.comments)).toBe(true);
+            expect(body.comments.length).toBeGreaterThan(0);
+            body.comments.forEach((comment) => {
+                expect(comment).toHaveProperty('comment_id');
+                expect(comment).toHaveProperty('votes');
+                expect(comment).toHaveProperty('created_at');
+                expect(comment).toHaveProperty('author');
+                expect(comment).toHaveProperty('body');
+                expect(comment).toHaveProperty('article_id');
+                expect(comment.article_id).toBe(1);
+            })
+        })
+    });
+
+    it('GET: 200 - Should return comments sorted by created_at in descending order', () => {
+        return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comments).toBeSortedBy('created_at', { descending: true });
+        })
+    });
+
+    it('GET: 200 - Should return an empty array for an article with no comments', () => {
+        return request(app)
+        .get('/api/articles/2/comments')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comments).toEqual([]);
+        })
+    });
+
+    it('GET: 404 - Should respond with an error message when given a non-existent article_id', () => {
+        return request(app)
+        .get('/api/articles/999999/comments')
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Article Not Found');
+        })
+    })
+
+    it('GET: 400 - Should respond with an error message when given an invalid article_id', () => {
+        return request(app)
+        .get('/api/articles/invalid/comments')
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Invalid Id');
         })
     })
 });
