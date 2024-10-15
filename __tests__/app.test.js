@@ -55,10 +55,25 @@ describe('GET /api/articles/:article_id', () => {
         .get('/api/articles/1')
         .expect(200)
         .then(({ body }) => {
-            console.log(body, "<<???")
             expect(body.article.article_id).toBe(1)
             expect(typeof body.article.title).toBe("string")
             expect(body.article).toHaveProperty("created_at")
+        })
+    });
+    it('GET: 400 - Should respond with an error message when given an invalid article_id', () => {
+        return request(app)
+        .get('/api/articles/xyz')
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe("Bad Request")
+        })
+    });
+    it('GET: 404 - Should respond with an error message when given a valid but non-existent article_id', () => {
+        return request(app)
+        .get('/api/articles/78654689008777888866')
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Not Found')
         })
     });
 });
