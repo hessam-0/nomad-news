@@ -13,7 +13,7 @@ app.use((req, res, next) => {
 });
 
 app.use(psqlErrorHandler);
-app.use(serverErrorHandler);
 app.use(customErrorHandler);
+app.use(serverErrorHandler);
 
 module.exports = app;

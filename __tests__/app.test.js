@@ -70,7 +70,7 @@ describe('GET /api/articles/:article_id', () => {
     });
     it('GET: 404 - Should respond with an error message when given a valid but non-existent article_id', () => {
         return request(app)
-        .get('/api/articles/78654689008777888866')
+        .get('/api/articles/999999')
         .expect(404)
         .then(({ body }) => {
             expect(body.msg).toBe('Not Found')
