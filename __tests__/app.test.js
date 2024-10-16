@@ -367,6 +367,61 @@ describe('DELETE /api/comments/:comment_id', () => {
       })
     
   })
-  
+})
+describe('GET /api/users', () => {
+  it('GET: 200 - Should respond with an array of user objects', () => {
+    return request(app)
+    .get('/api/users')
+    .expect(200)
+    .then(({ body }) => {
+        expect(Array.isArray(body.users)).toBe(true);
+        expect(body.users.length).toBeGreaterThan(0);
+        body.users.forEach((user) => {
+          expect(user).toHaveProperty('username');
+          expect(user).toHaveProperty('name');
+          expect(user).toHaveProperty('avatar_url');
+          expect(typeof user.username).toBe('string');
+          expect(typeof user.name).toBe('string');
+          expect(typeof user.avatar_url).toBe('string');
+        })
+      })
+  })
+  it('GET: 200 - Should return users data with correct types', () => {
+    return request(app)
+    .get('/api/users')
+    .expect(200)
+    .then(({ body }) => {
+        body.users.forEach((user) => {
+          const validUrlRegExp = /^(ftp|http|https):\/\/[^ "]+$/;
+          expect(typeof user.username).toBe('string');
+          expect(typeof user.name).toBe('string');
+          expect(typeof user.avatar_url).toBe('string');
+          expect(user.avatar_url).toMatch(validUrlRegExp)
+          expect(validUrlRegExp.test(user.avatar_url)).toBe(true);
+        })
+      })
+    
 
+  })
+  it('GET: 200 - Should return an empty array if there are no users', () => {
+    return db.query('TRUNCATE TABLE users RESTART IDENTITY CASCADE')
+    .then(()=> {
+       return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then(({ body })=> {
+            expect(body.users).toEqual([]);
+         
+
+      })  
+    })
+  })
+  it('GET: 404 - Should respond with an error for an invalid endpoint', () => {
+    return request(app)
+    .get('/api/yousirs')
+    .expect(404)
+    .then(({ body }) => {
+        expect(body.msg).toBe('Not Found');
+      })
+  })
 })
