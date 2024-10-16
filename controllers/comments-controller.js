@@ -1,4 +1,4 @@
-const { fetchCommentsByArticleId, insertComment } = require("../models/comments-model");
+const { fetchCommentsByArticleId, insertComment, removeCommentById } = require("../models/comments-model");
 const { fetchArticleById } = require("../models/article-model");
 
 exports.getCommentsByArticleId = (req, res, next) => {
@@ -23,6 +23,10 @@ exports.postComment = (req, res, next) => {
         return next ({status: 400, msg: 'Invalid comment'})
     }
 
+    if(isNaN(article_id)){
+        return (next({status: 400, msg: 'Bad Request'}))
+    }
+
     fetchArticleById(article_id)
     .then(() => {
         return insertComment(article_id, username, body);
@@ -34,4 +38,22 @@ exports.postComment = (req, res, next) => {
     .catch((err) => {
         next(err)
     });
+}
+
+exports.deleteCommentById = (req, res, next) => {
+    const { comment_id } = req.params;
+
+    if(isNaN(comment_id)){
+        return next({status: 400, msg: 'Bad Request'})
+    }
+
+    removeCommentById(comment_id)
+    .then((deletedComment) => {
+      if(!deletedComment){
+        return next({ status: 404, msg: 'Comment Not Found'})
+       }
+      res.status(204).send();
+      })
+    .catch(next)
+
 }

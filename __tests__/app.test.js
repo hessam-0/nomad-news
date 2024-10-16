@@ -233,6 +233,19 @@ describe('POST /api/articles/:article_id/comments', () => {
             expect(body.msg).toBe('Not Found')
         })
     })
+    it('POST: 400 - Should return an error if given an invalid article_id', () => {
+        const comment = {
+            username: 'rogersop',
+            body: 'not a valid comment'
+        }
+        return request(app)
+        .post('/api/articles/xyz/comments')
+        .send(comment)
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Bad Request')
+        })
+    });
 });
 describe('PATCH /api/article/:articles_id', () => {
     it('PATCH: 200 - Should update votes and return updated article', () => {
@@ -270,7 +283,7 @@ describe('PATCH /api/article/:articles_id', () => {
          });
 
     });
-    it('PATCH: 400 - Should return an error when given an invalid ine_votes', () => {
+    it('PATCH: 400 - Should return an error when given an invalid inc_votes', () => {
         const invalidVote = { inc_votes: "xyz" };
 
         return request(app)
@@ -312,4 +325,48 @@ describe('PATCH /api/article/:articles_id', () => {
             expect(body.msg).toBe('Bad Request')
         })
     });
+})
+describe('DELETE /api/comments/:comment_id', () => {
+  it('DELETE: 204 - Should delete the givne comment by comment_id', () => {
+    return request(app)
+    .delete('/api/comments/1')
+    .expect(204)
+    .then(({ body }) => {
+        expect(body).toEqual({});
+      })
+    
+  })
+  it('DELETE: 404 - Should return an error if given non-existent comment_id', () => {
+    return request(app)
+    .delete('/api/comments/99999')
+    .expect(404)
+    .then(({ body }) => {
+        expect(body.msg).toBe('Comment Not Found')
+        
+      })
+  })
+  it('DELETE: 400 - Should return an error if given ivalid comment_id', () => {
+    return request(app)
+    .delete('/api/comments/xyz')
+    .expect(400)
+    .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request')
+      })
+  })
+  it('DELETE: 204 - Should remove deleted comment from db', () => {
+    return request(app)
+    .delete('/api/comments/1')
+    .expect(204)
+    .then(() => {
+        return request(app)
+        .get('/api/comments/1')
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Not Found')
+          })
+      })
+    
+  })
+  
+
 })
