@@ -97,5 +97,12 @@
       }
     }
 
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes comments selected by comment_id",
+    "exampleResponse": {
+      "status": 204,
+      "body": null
+    }
   }
 }
