@@ -14,6 +14,7 @@ apiRouter.get("/", (req, res) => {
 apiRouter.use('/topics', topicsRouter);
 apiRouter.use('/articles', articleRouter);
 apiRouter.use('/comments', commentsRouter);
+apiRouter.use('/users', usersRouter);
 
 
 module.exports = apiRouter;
