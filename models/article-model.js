@@ -31,5 +31,15 @@ exports.fetchAllArticles = () => {
     return db.query(query).then(({ rows }) => {
         return rows;
     })
+}
 
+exports.updateArticleVotesById = (article_id, inc_votes) => {
+    const query = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`
+    return db.query(query, [inc_votes, article_id])
+    .then(({ rows }) => {
+        if(rows.length === 0){
+            return Promise.reject({ status: 404, msg: 'Article Not Found'})
+        }
+        return rows[0]
+    })
 }

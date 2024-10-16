@@ -192,6 +192,7 @@ describe('POST /api/articles/:article_id/comments', () => {
                 votes: 0,
                 created_at: expect.any(String)
             })
+            expect(new Date(body.comment.created_at).toString()).not.toBe('Invalid Date')
         })
     });
     it('POST: 400 - Should return an error if missing comment body', () => {
@@ -233,3 +234,82 @@ describe('POST /api/articles/:article_id/comments', () => {
         })
     })
 });
+describe('PATCH /api/article/:articles_id', () => {
+    it('PATCH: 200 - Should update votes and return updated article', () => {
+        const votes = { inc_votes : 1};
+
+        return request(app)
+        .patch('/api/articles/1')
+        .send(votes)
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.article).toMatchObject({
+                article_id: 1,
+                title: expect.any(String),
+                topic: expect.any(String),
+                author: expect.any(String),
+                body: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String)
+            })
+            expect(new Date(body.article.created_at).toString()).not.toBe('Invalid Date')
+            expect(body.article.votes).toBe(101);
+        })
+
+    });
+    it('PATCH: 200 - Should decrement votes when passed a negative number', () => {
+        const decVotes = { inc_votes: -1 }
+
+        return request(app)
+        .patch('/api/articles/1')
+        .send(decVotes)
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.article.votes).toBe(99);
+         });
+
+    });
+    it('PATCH: 400 - Should return an error when given an invalid ine_votes', () => {
+        const invalidVote = { inc_votes: "xyz" };
+
+        return request(app)
+        .patch('/api/articles/1')
+        .send(invalidVote)
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe("Bad Request");
+      })
+    });
+    it('PATCH: 400 - Should return an error for invalid article_id', () => {
+        const vote = { inc_votes: 1}
+
+        return request(app)
+        .patch("/api/articles/xyz")
+        .send(vote)
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Bad Request');
+      })
+    });
+    it('PATCH: 404 - Should return an error if given non-existent article_id', () => {
+        const vote = { inc_votes: 1};
+
+        return request(app)
+        .patch('/api/articles/9999')
+        .send(vote)
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Article Not Found');
+        })
+    })
+    it('PATCH: 400 - Should return an error if inc_votes is not given', () => {
+        return request(app)
+        .patch('/api/articles/1')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Bad Request')
+        })
+    });
+})
