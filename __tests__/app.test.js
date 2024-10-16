@@ -4,7 +4,7 @@ const db = require("../db/connection.js");
 const data = require("../db/data/test-data/index.js");
 const app = require("../app.js");
 const endpoints = require("../endpoints.json");
-const jestSorted = require("jest-sorted")
+const jestSorted = require("jest-sorted");
 
 beforeEach(() => {
     return seed(data);
@@ -170,6 +170,66 @@ describe('GET /api/articles/:article_id/comments', () => {
         .expect(400)
         .then(({ body }) => {
             expect(body.msg).toBe('Invalid Id');
+        })
+    })
+});
+describe('POST /api/articles/:article_id/comments', () => {
+    it('POST: 201 - Should add a new comment to an article', () => {
+        const comment = {
+            username: 'butter_bridge',
+            body: 'No comment'
+        }
+        return request(app)
+        .post('/api/articles/1/comments')
+        .send(comment)
+        .expect(201)
+        .then(({ body })=> {
+            expect(body.comment).toMatchObject({
+                comment_id: expect.any(Number),
+                body: 'No comment',
+                article_id: 1,
+                author: 'butter_bridge',
+                votes: 0,
+                created_at: expect.any(String)
+            })
+        })
+    });
+    it('POST: 400 - Should return an error if missing comment body', () => {
+        const comment = {
+            username: 'lurker',
+            body: ''
+        }
+        return request(app)
+        .post('/api/articles/1/comments')
+        .send(comment)
+        .expect(400)
+        .then(({ body })=> {
+            expect(body.msg).toBe('Invalid comment')
+        })
+    })
+    it('POST: 400 - Should return an error if missing username', () => {
+        const comment = {
+            body: ''
+        }
+        return request(app)
+        .post('/api/articles/1/comments')
+        .send(comment)
+        .expect(400)
+        .then(({ body })=> {
+            expect(body.msg).toBe('Invalid comment')
+        })
+    })
+    it('POST: 404 - Should return an error if the given article_id does not exist in the db', () => {
+        const comment = {
+            username: 'rogersop',
+            body: 'throwaway comment'
+        }
+        return request(app)
+        .post('/api/articles/99999/comments')
+        .send(comment)
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Not Found')
         })
     })
 });
