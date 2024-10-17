@@ -12,22 +12,9 @@ exports.getArticleById = (req, res, next) => {
 }
 
 exports.getAllArticles = (req, res, next) => {
-    let { sort_by, order } = req.query;
+    const { topic, sort_by, order } = req.query;
 
-    const validSortColumns = ['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']
-    const validOrders = [ 'asc', 'desc']
-        
-    if (sort_by && !validSortColumns.includes(sort_by)){
-      return next({ status: 400, msg: 'Bad Request: Invalid Sort Column'});
-    }
-    if (order && !validOrders.includes(order.toLowerCase())){
-      return next({ status: 400, msg: 'Bad Request: Invalid Sort Order'})
-    }
-
-    sort_by = sort_by || 'created_at';
-    order = order || 'desc';
-
-    fetchAllArticles(sort_by, order)
+    fetchAllArticles(topic, sort_by, order)
     .then((articles) => {
         res.status(200).send({ articles });
     })
