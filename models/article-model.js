@@ -1,7 +1,13 @@
 const db = require("../db/connection");
 
 exports.fetchArticleById = (article_id) => {
-    return db.query("SELECT * FROM articles WHERE article_id = $1;", [article_id])
+    const query =  `SELECT articles.*,
+                        (SELECT COUNT(*)::INT
+                        FROM comments
+                        WHERE comments.article_id = articles.article_id) AS comment_count
+                    FROM articles
+                    WHERE articles.article_id = $1;`;
+    return db.query(query, [article_id])
     .then(({ rows }) => {
         if(rows.length === 0){
             return Promise.reject({status: 404, msg: 'Not Found'})
