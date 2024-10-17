@@ -94,7 +94,7 @@ describe('GET /api/articles', () => {
                 expect(typeof article.topic).toBe('string')
                 expect(new Date(article.created_at).toString()).not.toBe('Invalid Date')
                 expect(typeof article.article_img_url).toBe('string')
-                expect(typeof article.comment_count).toBe('string')
+                expect(typeof article.comment_count).toBe('number')
             })
         })
     });
@@ -423,5 +423,48 @@ describe('GET /api/users', () => {
     .then(({ body }) => {
         expect(body.msg).toBe('Not Found');
       })
+  })
+})
+describe('GET /api/articles (sorted)', () => {
+  it('GET: 200 - Should sort articles by date in descending order by default', () => {
+    return request(app)
+    .get('/api/articles')
+    .expect(200)
+    .then(({ body }) => {
+        expect(body.articles).toBeSortedBy('created_at', {descending: true});
+      })
+  })
+  it('GET: 200 - Should sort articles by selected column in ascending order', () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&order=asc')
+    .expect(200)
+    .then(({ body }) => {
+        expect(body.articles).toBeSortedBy('title', { ascending : true});
+      })
+  })
+  it('GET: 200 - Should sort articles by votes in descending order', () => {
+    return request(app)
+    .get('/api/articles?sort_by=votes&order=desc')
+    .expect(200)
+    .then(({ body }) => {
+        expect(body.articles).toBeSortedBy('votes', { descending: true });
+      })
+  })
+  it('GET: 400 - Should return an error for an invalid column to sort by', () => {
+    return request(app)
+    .get('/api/articles?sort_by=not-a-sortable-column')
+    .expect(400)
+    .then(( { body }) => {
+        expect(body.msg).toBe('Bad Request: Invalid Sort Column')
+      })
+  })
+  it('GET: 400 - Should return an error if given an invalid order to sort by', () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&order=invalid')
+    .expect(400)
+    .then(( { body }) => {
+        expect(body.msg).toBe('Bad Request: Invalid Sort Order')
+      })
+    
   })
 })
