@@ -531,3 +531,22 @@ describe('GET /api/articles (topics)', () => {
         })
     });
 })
+describe('GET /api/articles/:article_id (comment_count)', () => {
+    it('GET: 200 - Should include comment_count property with correct type in response object when given valid article_id', () => {
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then(({ body }) => { 
+            expect(body.article).toHaveProperty('comment_count')
+            expect(typeof body.article.comment_count).toBe('number')
+        })
+    });
+    it('GET: 200 - Should return the correct number of comments from an article', () => {
+        return request(app)
+        .get('/api/articles/9')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.article.comment_count).toBe(2)
+        })
+    });
+});
