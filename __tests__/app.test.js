@@ -468,3 +468,66 @@ describe('GET /api/articles (sorted)', () => {
     
   })
 })
+describe('GET /api/articles (topics)', () => {
+    it('GET: 200 - Should filter articles by topic if given valid topic query', () => {
+        return request(app)
+        .get('/api/articles?topic=mitch')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles.length).toBeGreaterThan(0);
+            body.articles.forEach((article) => {
+                expect(article.topic).toBe('mitch')
+            })
+        })
+    });
+    it('GET: 200 - Should return an empty array if given valid topic query that has no articles', () => {
+        return request(app)
+        .get('/api/articles?topic=paper')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles).toEqual([])
+        })
+    });
+    it('GET: 200 - Should return all articles when no topic given', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles.length).toBeGreaterThan(0)
+            const uniqueTopics = body.articles.reduce((acc, article)=> {
+                acc[article.topic]=true;
+                return acc;},{})
+            expect(Object.keys(uniqueTopics).length).toBeGreaterThan(1);
+        })
+    });
+    it('GET: 200 - Should return all articles when the given topic is empty', () => {
+        return request(app)
+        .get('/api/articles?topic=')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles.length).toBeGreaterThan(0)
+            const uniqueTopics = body.articles.reduce((acc, article)=> {
+                acc[article.topic]=true;
+                return acc;},{})
+            expect(Object.keys(uniqueTopics).length).toBeGreaterThan(1);
+        })
+    });
+    it('GET: 200 - Should work in combination with existing sort_by query ', () => {
+        return request(app)
+        .get('/api/articles?topic=mitch&sort_by=votes&order=desc')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles.length).toBeGreaterThan(0)
+            body.articles.forEach(article => { expect(article.topic).toBe('mitch')})
+            expect(body.articles).toBeSortedBy('votes', { descending: true })
+        })
+    });
+    it('GET: 404 - Should return an error when filtering by a non-existent topic', () => {
+        return request(app)
+        .get('/api/articles?topic=hottopic')
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('Topic Not Found')
+        })
+    });
+})
