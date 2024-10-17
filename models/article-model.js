@@ -10,8 +10,19 @@ exports.fetchArticleById = (article_id) => {
     })
 }
 
-exports.fetchAllArticles = (sort_by, order) => {
-    const query =`
+exports.fetchAllArticles = (topic, sort_by = 'created_at', order = 'DESC' ) => {
+    const validSortColumns = ['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count'];
+    const validOrders = ['ASC', 'DESC'];
+
+    if (!validSortColumns.includes(sort_by)) {
+        return Promise.reject({ status: 400, msg: 'Bad Request: Invalid Sort Column' });
+    }
+
+    if (!validOrders.includes(order.toUpperCase())) {
+        return Promise.reject({ status: 400, msg: 'Bad Request: Invalid Sort Order' });
+    }
+
+    let query =`
                     SELECT
                                 articles.author,
                                 articles.title,
@@ -25,11 +36,31 @@ exports.fetchAllArticles = (sort_by, order) => {
                     FROM        articles
                     LEFT JOIN   comments
                     ON          articles.article_id = comments.article_id
-                    GROUP BY    articles.article_id
-                    ORDER BY    ${sort_by} ${order.toUpperCase()};
                 `
-    return db.query(query).then(({ rows }) => {
-        return rows;
+    const queryOptions = []
+
+    if (topic) {
+        query += ' WHERE articles.topic = $1'
+        queryOptions.push(topic);
+    }
+
+    query += `
+        GROUP BY articles.article_id
+        ORDER BY ${sort_by} ${order.toUpperCase()}
+    `
+
+    return db.query(query, queryOptions)
+    .then(({ rows }) => {
+        if (rows.length === 0 && topic){
+            return db.query('SELECT * FROM topics WHERE slug = $1', [topic])
+            .then(({ rows: topicRows }) => {
+                if(topicRows.length === 0){
+                    return Promise.reject({ status: 404, msg: 'Topic Not Found'});
+                }
+                return []
+            })
+        }
+        return rows
     })
 }
 
@@ -43,4 +74,3 @@ exports.updateArticleVotesById = (article_id, inc_votes) => {
         return rows[0]
     })
 }
-
