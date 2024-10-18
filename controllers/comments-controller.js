@@ -1,4 +1,4 @@
-const { fetchCommentsByArticleId, insertComment, removeCommentById } = require("../models/comments-model");
+const { fetchCommentsByArticleId, insertComment, removeCommentById, updateCommentVotes } = require("../models/comments-model");
 const { fetchArticleById } = require("../models/article-model");
 
 exports.getCommentsByArticleId = (req, res, next) => {
@@ -55,5 +55,27 @@ exports.deleteCommentById = (req, res, next) => {
       res.status(204).send();
       })
     .catch(next)
+
+}
+
+exports.patchCommentVotes = (req, res, next) => {
+    const { comment_id } = req.params;
+    const { inc_votes } = req.body;
+    
+    if(inc_votes === undefined || isNaN(inc_votes)){
+    return next({ status: 400, msg: 'Bad Request'})
+    }
+
+    if(isNaN(comment_id)){
+        return next({ status: 400, msg: 'Bad Request'})
+    }
+
+  updateCommentVotes(comment_id, inc_votes)
+    .then((comment) => {
+      res.status(200).send({ comment });
+    })
+    .catch(next);
+
+
 
 }

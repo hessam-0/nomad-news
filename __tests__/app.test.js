@@ -582,3 +582,77 @@ describe('GET /api/users/:username', () => {
       });
   })
 })
+describe('PATCH /api/comments/:comment_id', () => {
+  it('PATCH: 200 - Should update votes and return updated comment', () => {
+    const votes = { inc_votes: 1 };
+    return request(app)
+      .patch('/api/comments/1')
+      .send(votes)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          comment_id: 1,
+          body: expect.any(String),
+          article_id: expect.any(Number),
+          author: expect.any(String),
+          votes: expect.any(Number),
+          created_at: expect.any(String)
+        });
+        expect(body.comment.votes).toBe(17);
+      });
+  });
+
+  it('PATCH: 200 - Should decrement votes when passed a negative number', () => {
+    const decVotes = { inc_votes: -1 };
+    return request(app)
+      .patch('/api/comments/17')
+      .send(decVotes)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment.votes).toBe(19);
+      });
+  });
+
+  it('PATCH: 400 - Should return an error when given an invalid inc_votes', () => {
+    const invalidVote = { inc_votes: "xyz" };
+    return request(app)
+      .patch('/api/comments/1')
+      .send(invalidVote)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+
+  it('PATCH: 400 - Should return an error for invalid comment_id', () => {
+    const vote = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/xyz")
+      .send(vote)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request');
+      });
+  });
+
+  it('PATCH: 404 - Should return an error if given non-existent comment_id', () => {
+    const vote = { inc_votes: 1 };
+    return request(app)
+      .patch('/api/comments/9999')
+      .send(vote)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Comment Not Found');
+      });
+  });
+
+  it('PATCH: 400 - Should return an error if inc_votes is not given', () => {
+    return request(app)
+      .patch('/api/comments/1')
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request');
+      });
+  });
+});

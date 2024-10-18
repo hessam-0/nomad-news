@@ -30,3 +30,15 @@ exports.removeCommentById = async (comment_id) => {
     return rows[0] || null;
   }
 
+exports.updateCommentVotes = async(comment_id, inc_votes) => {
+  const result = await db.query(
+    'UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *;',
+    [inc_votes, comment_id]
+  );
+
+  if(result.rows.length === 0){
+    return Promise.reject(({ status: 404, msg: 'Comment Not Found'}))
+  }
+
+  return result.rows[0];
+}
