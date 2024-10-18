@@ -12,7 +12,6 @@ exports.getUsers = (req, res, next) => {
 
 exports.getUserByUsername = (req, res, next) => {
   const { username } = req.params;
-  console.log(username, "<< username in the controller")
 
   const usernameRegExp = /^[a-z0-9_-]+$/i
 
