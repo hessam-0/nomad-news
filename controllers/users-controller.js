@@ -1,4 +1,4 @@
-const { fetchUsers } = require("../models/users-model");
+const { fetchUsers, fetchUserByUsername } = require("../models/users-model");
 
 exports.getUsers = (req, res, next) => {
   fetchUsers()
@@ -8,5 +8,22 @@ exports.getUsers = (req, res, next) => {
   .catch((err) => {
       next(err);
     })
+}
+
+exports.getUserByUsername = (req, res, next) => {
+  const { username } = req.params;
+  console.log(username, "<< username in the controller")
+
+  const usernameRegExp = /^[a-z0-9_-]+$/i
+
+  if(!usernameRegExp.test(username)){
+    return next({ status: 400, msg: 'Invalid Username Format'})
+  }
+
+  fetchUserByUsername(username)
+  .then((user) => { 
+    res.status(200).send({ user })
+    })
+  .catch(next);
 }
 

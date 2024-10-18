@@ -5,6 +5,8 @@ const data = require("../db/data/test-data/index.js");
 const app = require("../app.js");
 const endpoints = require("../endpoints.json");
 const jestSorted = require("jest-sorted");
+const express = require("express");
+const { string } = require("pg-format");
 
 beforeEach(() => {
     return seed(data);
@@ -550,3 +552,33 @@ describe('GET /api/articles/:article_id (comment_count)', () => {
         })
     });
 });
+describe('GET /api/users/:username', () => {
+  it('GET: 200 - Should respond with a user object for a valid username', () => {
+    return request(app)
+    .get('/api/users/butter_bridge')
+    .expect(200)
+    .then(({ body }) => {
+        expect(body.user).toEqual({
+          username: 'butter_bridge',
+          name: expect.any(String),
+          avatar_url: expect.any(String)
+        })
+      })
+  })
+  it('GET: 404 - Should respond with an error if given non-existent username', () => {
+    return request(app)
+    .get('/api/users/charliefromfolkclub')
+    .expect(404)
+    .then(( { body }) => {
+        expect(body.msg).toBe('User Not Found');
+      })
+  })
+  it('GET: 400 - Should respond with an error for invalid username format', () => {
+    return request(app)
+      .get('/api/users/invalid@username')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Invalid Username Format');
+      });
+  })
+})
